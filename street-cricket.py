@@ -14,12 +14,413 @@ import shutil
 import sys
 from prettytable import PrettyTable
 
-outcomes = [0, 1, 2, 3, 4, 6, 'OUT', 'Wide']
+outcomes = [0, 1, 2, 3, 4, 6, 'OUT']
 outList = ['Bowled', 'Caught', 'Run Out']
 gameRate = 0.05 # seconds between balls
 
 overs = 5
 balls = 6
+
+oneInnBat = PrettyTable(['Batsmen',' ','Fielder','Bowler','Runs','Balls','4s','6s','SR'])
+oneIngBowl = PrettyTable(['Bowler', 'Overs', 'Dots', 'Runs', 'Wickets', 'Economy'])
+twoIngBat = PrettyTable(['Batsmen',' ','Fielder','Bowler','Runs','Balls','4s','6s','SR'])
+twoIngBowl = PrettyTable(['Bowler', 'Overs', 'Dots', 'Runs', 'Wickets', 'Economy'])
+
+
+def checkWinner(over, ball, totalScore, totalWickets, target):
+    team1Score = target - 1
+    
+    if totalScore == target or totalScore > target:
+        wicketsWon = 5 - totalWickets
+        print()
+        print('     '+team1+' won by '+str(wicketsWon)+' wickets.')
+        return True
+    elif over == 4 and ball == 6:
+        if totalScore < target-1:
+            print()
+            runsWon = target - totalScore - 1
+            print('     '+team1+' won by '+str(runsWon)+' runs')
+            return True
+        if totalScore == target-1:
+            print()
+            print('     Draw Match')
+            return True
+    
+
+def prepInnings2(team1, team2, target):
+    
+    with open(team1+'.txt') as team1Text:
+        team1Players = team1Text.readlines()
+    
+    with open(team2+'.txt') as team2Text:
+        team2Players = team2Text.readlines()
+    
+    for i in range(len(team1Players)):
+        team1Players[i] = team1Players[i].replace('\n','')
+    
+    for i in range(len(team2Players)):
+        team2Players[i] = team2Players[i].replace('\n','')
+        
+    t = PrettyTable([team1, team2])
+    for i in range(len(team1Players)):
+        t.add_row([team1Players[i], team2Players[i]])
+    
+    print()
+    print()
+    
+    print(team1+' Second innings')
+    print()
+    
+    onStrike = team1Players[0]
+    offStrike = team1Players[1]
+    
+    onStrikeRuns = 0
+    onStrikeBalls = 0
+    onStrikeFours = 0
+    onStrikeSixes = 0
+    
+    offStrikeRuns = 0
+    offStrikeBalls = 0
+    offStrikeFours = 0
+    offStrikeSixes = 0
+    
+    
+    initialBalls = 0
+    
+    totalWickets = 0
+    initialWickets = 0
+    
+    totalWides = 0
+    initialWides = 0
+    
+    totalDotBalls = 0
+    initialDotBalls = 0
+    
+    initialScore = 0
+    totalScore = 0
+    
+    bowlers = team2Players.copy()
+    bowlerPresent = random.choice(bowlers)
+    bowlers.remove(bowlerPresent)
+    
+    for over in range(overs):
+        for ball in range(1,balls+1):
+            check = checkWinner(over, ball, totalScore, totalWickets, target)
+            if check == True:
+                break
+            # outcomes = [0, 1, 2, 3, 4, 6, 'OUT', 'Wide']
+            ballOutcome = random.choices(outcomes,weights=(2,3,2.5,0.25,2,2,1.25),k=1)
+            initialBalls = initialBalls + 1
+            onStrikeBalls = onStrikeBalls + 1
+            
+            if over == 0 and ball == 1:
+                if ballOutcome == ['OUT']:
+                    print('{}.{}  {} to {}, OUT !, The batsmen isnt happy and its declared as a trail ball'.format(over,ball,bowlerPresent,onStrike))
+                    ballOutcome = [0]
+                    continue
+                    
+            
+            if ballOutcome == [0]:
+                initialDotBalls = initialDotBalls + 1
+                totalDotBalls = totalDotBalls + 1
+                initialScore = initialScore + 0
+                totalScore = totalScore + 0
+                
+                onStrikeRuns = onStrikeRuns + 0
+                
+                
+                print('{}.{}  {} to {}, no runs'.format(over,ball,bowlerPresent,onStrike))
+                
+                if ball == 6:
+                    onStrike, offStrike = offStrike, onStrike
+                    onStrikeRuns,offStrikeRuns = offStrikeRuns, onStrikeRuns
+                    onStrikeBalls, offStrikeBalls = offStrikeBalls, onStrikeBalls
+                    onStrikeFours, offStrikeFours = offStrikeFours, onStrikeFours
+                    onStrikeSixes, offStrikeSixes = offStrikeSixes, onStrikeSixes
+                else:
+                    onStrike, offStrike = onStrike, offStrike
+                    onStrikeRuns,offStrikeRuns = onStrikeRuns, offStrikeRuns
+                    onStrikeBalls, offStrikeBalls = onStrikeBalls, offStrikeBalls
+                    onStrikeFours, offStrikeFours = onStrikeFours, offStrikeFours
+                    onStrikeSixes, offStrikeSixes = onStrikeSixes, offStrikeSixes
+                    
+            elif ballOutcome == [1]:
+                initialDotBalls = initialDotBalls + 0
+                initialScore = initialScore + 1
+                totalScore = totalScore + 1
+                
+                onStrikeRuns = onStrikeRuns + 1
+                
+                
+                print('{}.{}  {} to {}, one run'.format(over,ball,bowlerPresent,onStrike))
+                
+                if ball == 6:
+                    onStrike, offStrike = onStrike, offStrike
+                    onStrikeRuns,offStrikeRuns = onStrikeRuns, offStrikeRuns
+                    onStrikeBalls, offStrikeBalls = onStrikeBalls, offStrikeBalls
+                    onStrikeFours, offStrikeFours = onStrikeFours, offStrikeFours
+                    onStrikeSixes, offStrikeSixes = onStrikeSixes, offStrikeSixes
+                else:
+                    onStrike, offStrike = offStrike, onStrike
+                    onStrikeRuns,offStrikeRuns = offStrikeRuns, onStrikeRuns
+                    onStrikeBalls, offStrikeBalls = offStrikeBalls, onStrikeBalls
+                    onStrikeFours, offStrikeFours = offStrikeFours, onStrikeFours
+                    onStrikeSixes, offStrikeSixes = offStrikeSixes, onStrikeSixes
+                    
+            elif ballOutcome == [2]:
+                initialDotBalls = initialDotBalls + 0
+                initialScore = initialScore + 2
+                totalScore = totalScore + 2
+                
+                onStrikeRuns = onStrikeRuns + 2
+                
+                
+                print('{}.{}  {} to {}, two runs'.format(over,ball,bowlerPresent,onStrike))
+                
+                if ball == 6:
+                    onStrike, offStrike = offStrike, onStrike
+                    onStrikeRuns,offStrikeRuns = offStrikeRuns, onStrikeRuns
+                    onStrikeBalls, offStrikeBalls = offStrikeBalls, onStrikeBalls
+                    onStrikeFours, offStrikeFours = offStrikeFours, onStrikeFours
+                    onStrikeSixes, offStrikeSixes = offStrikeSixes, onStrikeSixes
+                else:
+                    onStrike, offStrike = onStrike, offStrike
+                    onStrikeRuns,offStrikeRuns = onStrikeRuns, offStrikeRuns
+                    onStrikeBalls, offStrikeBalls = onStrikeBalls, offStrikeBalls
+                    onStrikeFours, offStrikeFours = onStrikeFours, offStrikeFours
+                    onStrikeSixes, offStrikeSixes = onStrikeSixes, offStrikeSixes
+                
+            elif ballOutcome == [3]:
+                initialDotBalls = initialDotBalls + 0
+                initialScore = initialScore + 3
+                totalScore = totalScore + 3
+                
+                onStrikeRuns = onStrikeRuns + 3
+                
+                
+                print('{}.{}  {} to {}, three runs'.format(over,ball,bowlerPresent,onStrike))
+                
+                if ball == 6:
+                    onStrike, offStrike = onStrike, offStrike
+                    onStrikeRuns,offStrikeRuns = onStrikeRuns, offStrikeRuns
+                    onStrikeBalls, offStrikeBalls = onStrikeBalls, offStrikeBalls
+                    onStrikeFours, offStrikeFours = onStrikeFours, offStrikeFours
+                    onStrikeSixes, offStrikeSixes = onStrikeSixes, offStrikeSixes
+                else:
+                    onStrike, offStrike = offStrike, onStrike
+                    onStrikeRuns,offStrikeRuns = offStrikeRuns, onStrikeRuns
+                    onStrikeBalls, offStrikeBalls = offStrikeBalls, onStrikeBalls
+                    onStrikeFours, offStrikeFours = offStrikeFours, onStrikeFours
+                    onStrikeSixes, offStrikeSixes = offStrikeSixes, onStrikeSixes
+                
+            elif ballOutcome == [4]:
+                initialDotBalls = initialDotBalls + 0
+                initialScore = initialScore + 4
+                totalScore = totalScore + 4
+                
+                onStrikeRuns = onStrikeRuns + 4
+                
+                onStrikeFours = onStrikeFours + 1
+                
+                print('{}.{}  {} to {}, FOUR'.format(over,ball,bowlerPresent,onStrike))
+                
+                if ball == 6:
+                    onStrike, offStrike = offStrike, onStrike
+                    onStrikeRuns,offStrikeRuns = offStrikeRuns, onStrikeRuns
+                    onStrikeBalls, offStrikeBalls = offStrikeBalls, onStrikeBalls
+                    onStrikeFours, offStrikeFours = offStrikeFours, onStrikeFours
+                    onStrikeSixes, offStrikeSixes = offStrikeSixes, onStrikeSixes
+                else:
+                    onStrike, offStrike = onStrike, offStrike
+                    onStrikeRuns,offStrikeRuns = onStrikeRuns, offStrikeRuns
+                    onStrikeBalls, offStrikeBalls = onStrikeBalls, offStrikeBalls
+                    onStrikeFours, offStrikeFours = onStrikeFours, offStrikeFours
+                    onStrikeSixes, offStrikeSixes = onStrikeSixes, offStrikeSixes
+                
+            elif ballOutcome == [6]:
+                initialDotBalls = initialDotBalls + 0
+                initialScore = initialScore + 6
+                totalScore = totalScore + 6
+                
+                onStrikeRuns = onStrikeRuns + 6
+                
+                onStrikeSixes = onStrikeSixes + 1
+                
+                print('{}.{}  {} to {}, SIX'.format(over,ball,bowlerPresent,onStrike))
+                
+                if ball == 6:
+                    onStrike, offStrike = offStrike, onStrike
+                    onStrikeRuns,offStrikeRuns = offStrikeRuns, onStrikeRuns
+                    onStrikeBalls, offStrikeBalls = offStrikeBalls, onStrikeBalls
+                    onStrikeFours, offStrikeFours = offStrikeFours, onStrikeFours
+                    onStrikeSixes, offStrikeSixes = offStrikeSixes, onStrikeSixes
+                else:
+                    onStrike, offStrike = onStrike, offStrike
+                    onStrikeRuns,offStrikeRuns = onStrikeRuns, offStrikeRuns
+                    onStrikeBalls, offStrikeBalls = onStrikeBalls, offStrikeBalls
+                    onStrikeFours, offStrikeFours = onStrikeFours, offStrikeFours
+                    onStrikeSixes, offStrikeSixes = onStrikeSixes, offStrikeSixes
+                
+            elif ballOutcome == ['OUT']:
+                # oneInnBat = PrettyTable(['Batsmen',' ','Fielder','Bowler','Runs','Balls','4s','6s','SR'])
+                outType = random.choices(outList,weights=(1,1,0.45),k=1)
+                # outList = ['Bowled', 'Caught', 'Run Out']
+                if outType == ['Bowled']:
+                    
+                    
+                    totalDotBalls = totalDotBalls + 1
+                    initialDotBalls = initialDotBalls + 1
+                    
+                    initialWickets = initialWickets + 1
+                    totalWickets = totalWickets + 1
+                    
+                    print('{}.{}  {} to {}, Bowled !'.format(over,ball,bowlerPresent,onStrike))
+                    print()
+                    print('     b. {}     {}({}){} [{}x4, {}x6]'.format(bowlerPresent,onStrike,onStrikeRuns,onStrikeBalls,onStrikeFours,onStrikeSixes))
+                    print()
+                    
+                    sr = (onStrikeRuns/onStrikeBalls)*100
+                    twoIngBat.add_row([onStrike,'b.','',bowlerPresent,onStrikeRuns,onStrikeBalls,onStrikeFours,onStrikeSixes,round(sr,2)])
+                    if ball == 6:
+                        onStrike, offStrike = offStrike, onStrike
+                        onStrikeRuns,offStrikeRuns = offStrikeRuns, onStrikeRuns
+                        onStrikeBalls, offStrikeBalls = offStrikeBalls, onStrikeBalls
+                        onStrikeFours, offStrikeFours = offStrikeFours, onStrikeFours
+                        onStrikeSixes, offStrikeSixes = offStrikeSixes, onStrikeSixes
+                    else:
+                        onStrike, offStrike = onStrike, offStrike
+                        onStrikeRuns,offStrikeRuns = onStrikeRuns, offStrikeRuns
+                        onStrikeBalls, offStrikeBalls = onStrikeBalls, offStrikeBalls
+                        onStrikeFours, offStrikeFours = onStrikeFours, offStrikeFours
+                        onStrikeSixes, offStrikeSixes = onStrikeSixes, offStrikeSixes
+                    
+                elif outType == ['Caught']:
+                    
+                    totalDotBalls = totalDotBalls + 1
+                    initialDotBalls = initialDotBalls + 1
+                    initialWickets = initialWickets + 1
+                    totalWickets = totalWickets + 1
+                    outPlayer = random.choice(team2Players)
+                    
+                    print('{}.{}  {} to {}, Caught by {}'.format(over,ball,bowlerPresent,onStrike,outPlayer))
+                    print()
+                    print('     c. {}     b. {}     {}({}){} [{}x4, {}x6]'.format(outPlayer,bowlerPresent,onStrike,onStrikeRuns,onStrikeBalls,onStrikeFours,onStrikeSixes))
+                    print()
+                    
+                    sr = (onStrikeRuns/onStrikeBalls)*100
+                    twoIngBat.add_row([onStrike,'c.',outPlayer,bowlerPresent,onStrikeRuns,onStrikeBalls,onStrikeFours,onStrikeSixes,round(sr,2)])
+                    if ball == 6:
+                        onStrike, offStrike = offStrike, onStrike
+                        onStrikeRuns,offStrikeRuns = offStrikeRuns, onStrikeRuns
+                        onStrikeBalls, offStrikeBalls = offStrikeBalls, onStrikeBalls
+                        onStrikeFours, offStrikeFours = offStrikeFours, onStrikeFours
+                        onStrikeSixes, offStrikeSixes = offStrikeSixes, onStrikeSixes
+                    else:
+                        onStrike, offStrike = onStrike, offStrike
+                        onStrikeRuns,offStrikeRuns = onStrikeRuns, offStrikeRuns
+                        onStrikeBalls, offStrikeBalls = onStrikeBalls, offStrikeBalls
+                        onStrikeFours, offStrikeFours = onStrikeFours, offStrikeFours
+                        onStrikeSixes, offStrikeSixes = onStrikeSixes, offStrikeSixes    
+                
+                elif outType == ['Run Out']:
+                    
+                    totalDotBalls = totalDotBalls + 1
+                    initialDotBalls = initialDotBalls + 1
+                    initialWickets = initialWickets + 1
+                    totalWickets = totalWickets + 1
+                    outPlayer = random.choice(team2Players)
+                    
+                    print('{}.{}  {} to {}, Run Out by {}'.format(over,ball,bowlerPresent,onStrike,outPlayer))
+                    print()
+                    print('     ro. {}     b. {}     {}({}){} [{}x4, {}x6]'.format(outPlayer,bowlerPresent,onStrike,onStrikeRuns,onStrikeBalls,onStrikeFours,onStrikeSixes))
+                    print()
+                    
+                    sr = (onStrikeRuns/onStrikeBalls)*100
+                    twoIngBat.add_row([onStrike,'ro.',outPlayer,bowlerPresent,onStrikeRuns,onStrikeBalls,onStrikeFours,onStrikeSixes,round(sr,2)])
+                    if ball == 6:
+                        onStrike, offStrike = offStrike, onStrike
+                        onStrikeRuns,offStrikeRuns = offStrikeRuns, onStrikeRuns
+                        onStrikeBalls, offStrikeBalls = offStrikeBalls, onStrikeBalls
+                        onStrikeFours, offStrikeFours = offStrikeFours, onStrikeFours
+                        onStrikeSixes, offStrikeSixes = offStrikeSixes, onStrikeSixes
+                    else:
+                        onStrike, offStrike = onStrike, offStrike
+                        onStrikeRuns,offStrikeRuns = onStrikeRuns, offStrikeRuns
+                        onStrikeBalls, offStrikeBalls = onStrikeBalls, offStrikeBalls
+                        onStrikeFours, offStrikeFours = onStrikeFours, offStrikeFours
+                        onStrikeSixes, offStrikeSixes = onStrikeSixes, offStrikeSixes
+                
+                onStrikeBalls = 0
+                onStrikeFours = 0
+                onStrikeRuns = 0
+                onStrikeSixes = 0
+                
+                if totalWickets < 4:
+                    onStrike = team1Players[totalWickets+1]
+                elif totalWickets == 4:
+                    onStrike = offStrike
+                elif totalWickets == 5:
+                    if onStrikeBalls == 0:
+                        sr = 0
+                    else:
+                        sr = (onStrikeRuns/onStrikeBalls)*100
+                    twoIngBat.add_row([onStrike,'Not Out','','',onStrikeRuns,onStrikeBalls,onStrikeFours,onStrikeSixes,round(sr,2)])
+                    
+                    b = str(over)+'.'+str(ball)
+                    rr = totalScore / int(b)
+                    break
+                    
+            if totalWickets == 4:
+                onStrikeRuns = offStrikeRuns
+                onStrikeBalls = offStrikeBalls
+                onStrikeFours = offStrikeFours
+                onStrikeSixes =  offStrikeSixes
+                    
+        print()
+        if over == 4:
+            if onStrikeBalls == 0:
+                sr1 = 0
+            else:
+                sr1 = (onStrikeRuns/onStrikeBalls)*100
+            twoIngBat.add_row([onStrike,'Not Out','','',onStrikeRuns,onStrikeBalls,onStrikeFours,onStrikeSixes,round(sr1,2)])
+            
+            if totalWickets != 4:
+                sr2 = (offStrikeRuns/offStrikeBalls)*100
+                twoIngBat.add_row([offStrike,'Not Out','','',offStrikeRuns,offStrikeBalls,offStrikeFours,offStrikeSixes,round(sr2,2)])
+            
+            economy = initialScore / 1
+            twoIngBowl.add_row([bowlerPresent, 1, initialDotBalls, initialScore, 
+                               initialWickets, round(economy,2)])
+            b = '5.0'
+            rr = totalScore / 5
+            continue
+        else:
+            economy = initialScore / 1
+            twoIngBowl.add_row([bowlerPresent, 1, initialDotBalls, initialScore, 
+                               initialWickets, round(economy,2)])
+            
+            print('     End of over {}.{}'.format(over,ball))
+            print('     {}     {}/{}'.format(team1,totalScore,totalWickets))
+            rr_new = totalScore/(over+1)
+            print('     RR.     {}'.format(round(rr_new,2)))
+            
+            print()
+            print('     {}     ({}){}* [{}x4,{}x6]'.format(onStrike,onStrikeRuns,onStrikeBalls,onStrikeFours,onStrikeSixes))
+            print('     {}     ({}){}* [{}x4,{}x6]'.format(offStrike,offStrikeRuns,offStrikeBalls,offStrikeFours,offStrikeSixes))
+            print('     {}     1.0-{}-{}-{}'.format(bowlerPresent,initialDotBalls,initialScore,initialWickets))
+            print()
+            
+            bowlerPresent = random.choice(bowlers)
+            bowlers.remove(bowlerPresent)
+            
+            initialScore = 0
+            initialDotBalls = 0
+    
+    print(twoIngBat)
+    print(twoIngBowl)
+    twoIngTotal = PrettyTable(['Total', 'Overs', 'Run Rate', 'Extras'])
+    twoIngTotal.add_row([totalScore,b,rr,0])
+    print(twoIngTotal)
 
 def prepInnings(team1, team2):
     
@@ -47,7 +448,7 @@ def prepInnings(team1, team2):
     print()
     
     onStrike = team1Players[0]
-    offStrike = team2Players[1]
+    offStrike = team1Players[1]
     
     onStrikeRuns = 0
     onStrikeBalls = 0
@@ -59,7 +460,7 @@ def prepInnings(team1, team2):
     offStrikeFours = 0
     offStrikeSixes = 0
     
-    totalBalls = 0
+    
     initialBalls = 0
     
     totalWickets = 0
@@ -67,6 +468,9 @@ def prepInnings(team1, team2):
     
     totalWides = 0
     initialWides = 0
+    
+    totalDotBalls = 0
+    initialDotBalls = 0
     
     initialScore = 0
     totalScore = 0
@@ -78,19 +482,323 @@ def prepInnings(team1, team2):
     for over in range(overs):
         for ball in range(1,balls+1):
             # outcomes = [0, 1, 2, 3, 4, 6, 'OUT', 'Wide']
-            ballOutcome = random.choices(outcomes,weights=(2,3,2.5,0.25,2,2,1,0.25),k=1)
+            ballOutcome = random.choices(outcomes,weights=(2,3,2.5,0.25,2,2,1.25),k=1)
+            initialBalls = initialBalls + 1
+            onStrikeBalls = onStrikeBalls + 1
+            
+            if over == 0 and ball == 1:
+                if ballOutcome == ['OUT']:
+                    print('{}.{}  {} to {}, OUT !, The batsmen isnt happy and its declared as a trail ball'.format(over,ball,bowlerPresent,onStrike))
+                    ballOutcome = [0]
+                    continue
+                    
+            
             if ballOutcome == [0]:
+                initialDotBalls = initialDotBalls + 1
+                totalDotBalls = totalDotBalls + 1
+                initialScore = initialScore + 0
+                totalScore = totalScore + 0
+                
+                onStrikeRuns = onStrikeRuns + 0
+                
+                
                 print('{}.{}  {} to {}, no runs'.format(over,ball,bowlerPresent,onStrike))
+                
+                if ball == 6:
+                    onStrike, offStrike = offStrike, onStrike
+                    onStrikeRuns,offStrikeRuns = offStrikeRuns, onStrikeRuns
+                    onStrikeBalls, offStrikeBalls = offStrikeBalls, onStrikeBalls
+                    onStrikeFours, offStrikeFours = offStrikeFours, onStrikeFours
+                    onStrikeSixes, offStrikeSixes = offStrikeSixes, onStrikeSixes
+                else:
+                    onStrike, offStrike = onStrike, offStrike
+                    onStrikeRuns,offStrikeRuns = onStrikeRuns, offStrikeRuns
+                    onStrikeBalls, offStrikeBalls = onStrikeBalls, offStrikeBalls
+                    onStrikeFours, offStrikeFours = onStrikeFours, offStrikeFours
+                    onStrikeSixes, offStrikeSixes = onStrikeSixes, offStrikeSixes
+                    
             elif ballOutcome == [1]:
+                initialDotBalls = initialDotBalls + 0
+                initialScore = initialScore + 1
+                totalScore = totalScore + 1
+                
+                onStrikeRuns = onStrikeRuns + 1
+                
+                
                 print('{}.{}  {} to {}, one run'.format(over,ball,bowlerPresent,onStrike))
+                
+                if ball == 6:
+                    onStrike, offStrike = onStrike, offStrike
+                    onStrikeRuns,offStrikeRuns = onStrikeRuns, offStrikeRuns
+                    onStrikeBalls, offStrikeBalls = onStrikeBalls, offStrikeBalls
+                    onStrikeFours, offStrikeFours = onStrikeFours, offStrikeFours
+                    onStrikeSixes, offStrikeSixes = onStrikeSixes, offStrikeSixes
+                else:
+                    onStrike, offStrike = offStrike, onStrike
+                    onStrikeRuns,offStrikeRuns = offStrikeRuns, onStrikeRuns
+                    onStrikeBalls, offStrikeBalls = offStrikeBalls, onStrikeBalls
+                    onStrikeFours, offStrikeFours = offStrikeFours, onStrikeFours
+                    onStrikeSixes, offStrikeSixes = offStrikeSixes, onStrikeSixes
+                    
             elif ballOutcome == [2]:
+                initialDotBalls = initialDotBalls + 0
+                initialScore = initialScore + 2
+                totalScore = totalScore + 2
+                
+                onStrikeRuns = onStrikeRuns + 2
+                
+                
                 print('{}.{}  {} to {}, two runs'.format(over,ball,bowlerPresent,onStrike))
+                
+                if ball == 6:
+                    onStrike, offStrike = offStrike, onStrike
+                    onStrikeRuns,offStrikeRuns = offStrikeRuns, onStrikeRuns
+                    onStrikeBalls, offStrikeBalls = offStrikeBalls, onStrikeBalls
+                    onStrikeFours, offStrikeFours = offStrikeFours, onStrikeFours
+                    onStrikeSixes, offStrikeSixes = offStrikeSixes, onStrikeSixes
+                else:
+                    onStrike, offStrike = onStrike, offStrike
+                    onStrikeRuns,offStrikeRuns = onStrikeRuns, offStrikeRuns
+                    onStrikeBalls, offStrikeBalls = onStrikeBalls, offStrikeBalls
+                    onStrikeFours, offStrikeFours = onStrikeFours, offStrikeFours
+                    onStrikeSixes, offStrikeSixes = onStrikeSixes, offStrikeSixes
+                
             elif ballOutcome == [3]:
+                initialDotBalls = initialDotBalls + 0
+                initialScore = initialScore + 3
+                totalScore = totalScore + 3
+                
+                onStrikeRuns = onStrikeRuns + 3
+                
+                
                 print('{}.{}  {} to {}, three runs'.format(over,ball,bowlerPresent,onStrike))
+                
+                if ball == 6:
+                    onStrike, offStrike = onStrike, offStrike
+                    onStrikeRuns,offStrikeRuns = onStrikeRuns, offStrikeRuns
+                    onStrikeBalls, offStrikeBalls = onStrikeBalls, offStrikeBalls
+                    onStrikeFours, offStrikeFours = onStrikeFours, offStrikeFours
+                    onStrikeSixes, offStrikeSixes = onStrikeSixes, offStrikeSixes
+                else:
+                    onStrike, offStrike = offStrike, onStrike
+                    onStrikeRuns,offStrikeRuns = offStrikeRuns, onStrikeRuns
+                    onStrikeBalls, offStrikeBalls = offStrikeBalls, onStrikeBalls
+                    onStrikeFours, offStrikeFours = offStrikeFours, onStrikeFours
+                    onStrikeSixes, offStrikeSixes = offStrikeSixes, onStrikeSixes
+                
             elif ballOutcome == [4]:
+                initialDotBalls = initialDotBalls + 0
+                initialScore = initialScore + 4
+                totalScore = totalScore + 4
+                
+                onStrikeRuns = onStrikeRuns + 4
+                
+                onStrikeFours = onStrikeFours + 1
+                
                 print('{}.{}  {} to {}, FOUR'.format(over,ball,bowlerPresent,onStrike))
+                
+                if ball == 6:
+                    onStrike, offStrike = offStrike, onStrike
+                    onStrikeRuns,offStrikeRuns = offStrikeRuns, onStrikeRuns
+                    onStrikeBalls, offStrikeBalls = offStrikeBalls, onStrikeBalls
+                    onStrikeFours, offStrikeFours = offStrikeFours, onStrikeFours
+                    onStrikeSixes, offStrikeSixes = offStrikeSixes, onStrikeSixes
+                else:
+                    onStrike, offStrike = onStrike, offStrike
+                    onStrikeRuns,offStrikeRuns = onStrikeRuns, offStrikeRuns
+                    onStrikeBalls, offStrikeBalls = onStrikeBalls, offStrikeBalls
+                    onStrikeFours, offStrikeFours = onStrikeFours, offStrikeFours
+                    onStrikeSixes, offStrikeSixes = onStrikeSixes, offStrikeSixes
+                
+            elif ballOutcome == [6]:
+                initialDotBalls = initialDotBalls + 0
+                initialScore = initialScore + 6
+                totalScore = totalScore + 6
+                
+                onStrikeRuns = onStrikeRuns + 6
+                
+                onStrikeSixes = onStrikeSixes + 1
+                
+                print('{}.{}  {} to {}, SIX'.format(over,ball,bowlerPresent,onStrike))
+                
+                if ball == 6:
+                    onStrike, offStrike = offStrike, onStrike
+                    onStrikeRuns,offStrikeRuns = offStrikeRuns, onStrikeRuns
+                    onStrikeBalls, offStrikeBalls = offStrikeBalls, onStrikeBalls
+                    onStrikeFours, offStrikeFours = offStrikeFours, onStrikeFours
+                    onStrikeSixes, offStrikeSixes = offStrikeSixes, onStrikeSixes
+                else:
+                    onStrike, offStrike = onStrike, offStrike
+                    onStrikeRuns,offStrikeRuns = onStrikeRuns, offStrikeRuns
+                    onStrikeBalls, offStrikeBalls = onStrikeBalls, offStrikeBalls
+                    onStrikeFours, offStrikeFours = onStrikeFours, offStrikeFours
+                    onStrikeSixes, offStrikeSixes = onStrikeSixes, offStrikeSixes
+                
+            elif ballOutcome == ['OUT']:
+                # oneInnBat = PrettyTable(['Batsmen',' ','Fielder','Bowler','Runs','Balls','4s','6s','SR'])
+                outType = random.choices(outList,weights=(1,1,0.45),k=1)
+                # outList = ['Bowled', 'Caught', 'Run Out']
+                if outType == ['Bowled']:
+                    
+                    
+                    totalDotBalls = totalDotBalls + 1
+                    initialDotBalls = initialDotBalls + 1
+                    
+                    initialWickets = initialWickets + 1
+                    totalWickets = totalWickets + 1
+                    
+                    print('{}.{}  {} to {}, Bowled !'.format(over,ball,bowlerPresent,onStrike))
+                    print()
+                    print('     b. {}     {}({}){} [{}x4, {}x6]'.format(bowlerPresent,onStrike,onStrikeRuns,onStrikeBalls,onStrikeFours,onStrikeSixes))
+                    print()
+                    
+                    sr = (onStrikeRuns/onStrikeBalls)*100
+                    oneInnBat.add_row([onStrike,'b.','',bowlerPresent,onStrikeRuns,onStrikeBalls,onStrikeFours,onStrikeSixes,round(sr,2)])
+                    if ball == 6:
+                        onStrike, offStrike = offStrike, onStrike
+                        onStrikeRuns,offStrikeRuns = offStrikeRuns, onStrikeRuns
+                        onStrikeBalls, offStrikeBalls = offStrikeBalls, onStrikeBalls
+                        onStrikeFours, offStrikeFours = offStrikeFours, onStrikeFours
+                        onStrikeSixes, offStrikeSixes = offStrikeSixes, onStrikeSixes
+                    else:
+                        onStrike, offStrike = onStrike, offStrike
+                        onStrikeRuns,offStrikeRuns = onStrikeRuns, offStrikeRuns
+                        onStrikeBalls, offStrikeBalls = onStrikeBalls, offStrikeBalls
+                        onStrikeFours, offStrikeFours = onStrikeFours, offStrikeFours
+                        onStrikeSixes, offStrikeSixes = onStrikeSixes, offStrikeSixes
+                    
+                elif outType == ['Caught']:
+                    
+                    totalDotBalls = totalDotBalls + 1
+                    initialDotBalls = initialDotBalls + 1
+                    initialWickets = initialWickets + 1
+                    totalWickets = totalWickets + 1
+                    outPlayer = random.choice(team2Players)
+                    
+                    print('{}.{}  {} to {}, Caught by {}'.format(over,ball,bowlerPresent,onStrike,outPlayer))
+                    print()
+                    print('     c. {}     b. {}     {}({}){} [{}x4, {}x6]'.format(outPlayer,bowlerPresent,onStrike,onStrikeRuns,onStrikeBalls,onStrikeFours,onStrikeSixes))
+                    print()
+                    
+                    sr = (onStrikeRuns/onStrikeBalls)*100
+                    oneInnBat.add_row([onStrike,'c.',outPlayer,bowlerPresent,onStrikeRuns,onStrikeBalls,onStrikeFours,onStrikeSixes,round(sr,2)])
+                    if ball == 6:
+                        onStrike, offStrike = offStrike, onStrike
+                        onStrikeRuns,offStrikeRuns = offStrikeRuns, onStrikeRuns
+                        onStrikeBalls, offStrikeBalls = offStrikeBalls, onStrikeBalls
+                        onStrikeFours, offStrikeFours = offStrikeFours, onStrikeFours
+                        onStrikeSixes, offStrikeSixes = offStrikeSixes, onStrikeSixes
+                    else:
+                        onStrike, offStrike = onStrike, offStrike
+                        onStrikeRuns,offStrikeRuns = onStrikeRuns, offStrikeRuns
+                        onStrikeBalls, offStrikeBalls = onStrikeBalls, offStrikeBalls
+                        onStrikeFours, offStrikeFours = onStrikeFours, offStrikeFours
+                        onStrikeSixes, offStrikeSixes = onStrikeSixes, offStrikeSixes    
+                
+                elif outType == ['Run Out']:
+                    
+                    totalDotBalls = totalDotBalls + 1
+                    initialDotBalls = initialDotBalls + 1
+                    initialWickets = initialWickets + 1
+                    totalWickets = totalWickets + 1
+                    outPlayer = random.choice(team2Players)
+                    
+                    print('{}.{}  {} to {}, Run Out by {}'.format(over,ball,bowlerPresent,onStrike,outPlayer))
+                    print()
+                    print('     ro. {}     b. {}     {}({}){} [{}x4, {}x6]'.format(outPlayer,bowlerPresent,onStrike,onStrikeRuns,onStrikeBalls,onStrikeFours,onStrikeSixes))
+                    print()
+                    
+                    sr = (onStrikeRuns/onStrikeBalls)*100
+                    oneInnBat.add_row([onStrike,'ro.',outPlayer,bowlerPresent,onStrikeRuns,onStrikeBalls,onStrikeFours,onStrikeSixes,round(sr,2)])
+                    if ball == 6:
+                        onStrike, offStrike = offStrike, onStrike
+                        onStrikeRuns,offStrikeRuns = offStrikeRuns, onStrikeRuns
+                        onStrikeBalls, offStrikeBalls = offStrikeBalls, onStrikeBalls
+                        onStrikeFours, offStrikeFours = offStrikeFours, onStrikeFours
+                        onStrikeSixes, offStrikeSixes = offStrikeSixes, onStrikeSixes
+                    else:
+                        onStrike, offStrike = onStrike, offStrike
+                        onStrikeRuns,offStrikeRuns = onStrikeRuns, offStrikeRuns
+                        onStrikeBalls, offStrikeBalls = onStrikeBalls, offStrikeBalls
+                        onStrikeFours, offStrikeFours = onStrikeFours, offStrikeFours
+                        onStrikeSixes, offStrikeSixes = onStrikeSixes, offStrikeSixes
+                
+                onStrikeBalls = 0
+                onStrikeFours = 0
+                onStrikeRuns = 0
+                onStrikeSixes = 0
+                
+                if totalWickets < 4:
+                    onStrike = team1Players[totalWickets+1]
+                elif totalWickets == 4:
+                    onStrike = offStrike
+                elif totalWickets == 5:
+                    if onStrikeBalls == 0:
+                        sr = 0
+                    else:
+                        sr = (onStrikeRuns/onStrikeBalls)*100
+                    oneInnBat.add_row([onStrike,'Not Out','','',onStrikeRuns,onStrikeBalls,onStrikeFours,onStrikeSixes,round(sr,2)])
+                    
+                    b = str(over)+'.'+str(ball)
+                    rr = totalScore / float(b)
+                    break
+                    
+            if totalWickets == 4:
+                onStrikeRuns = offStrikeRuns
+                onStrikeBalls = offStrikeBalls
+                onStrikeFours = offStrikeFours
+                onStrikeSixes =  offStrikeSixes
+                    
         print()
+        if over == 4:
+            if onStrikeBalls == 0:
+                sr1 = 0
+            else:
+                sr1 = (onStrikeRuns/onStrikeBalls)*100
+            oneInnBat.add_row([onStrike,'Not Out','','',onStrikeRuns,onStrikeBalls,onStrikeFours,onStrikeSixes,round(sr1,2)])
+            
+            if totalWickets != 4:
+                sr2 = (offStrikeRuns/offStrikeBalls)*100
+                oneInnBat.add_row([offStrike,'Not Out','','',offStrikeRuns,offStrikeBalls,offStrikeFours,offStrikeSixes,round(sr2,2)])
+            
+            economy = initialScore / 1
+            oneIngBowl.add_row([bowlerPresent, 1, initialDotBalls, initialScore, 
+                               initialWickets, round(economy,2)])
+            b = '5.0'
+            rr = totalScore / 5
+            continue
+        else:
+            economy = initialScore / 1
+            oneIngBowl.add_row([bowlerPresent, 1, initialDotBalls, initialScore, 
+                               initialWickets, round(economy,2)])
+            
+            print('     End of over {}.{}'.format(over,ball))
+            print('     {}     {}/{}'.format(team1,totalScore,totalWickets))
+            rr_new = totalScore/(over+1)
+            print('     RR.     {}'.format(round(rr_new,2)))
+            
+            print()
+            print('     {}     ({}){}* [{}x4,{}x6]'.format(onStrike,onStrikeRuns,onStrikeBalls,onStrikeFours,onStrikeSixes))
+            print('     {}     ({}){}* [{}x4,{}x6]'.format(offStrike,offStrikeRuns,offStrikeBalls,offStrikeFours,offStrikeSixes))
+            print('     {}     1.0-{}-{}-{}'.format(bowlerPresent,initialDotBalls,initialScore,initialWickets))
+            print()
+            
+            bowlerPresent = random.choice(bowlers)
+            bowlers.remove(bowlerPresent)
+            
+            initialScore = 0
+            initialDotBalls = 0
     
+    print(oneInnBat)
+    print(oneIngBowl)
+    oneIngTotal = PrettyTable(['Total', 'Overs', 'Run Rate', 'Extras'])
+    oneIngTotal.add_row([totalScore,b,rr,0])
+    print(oneIngTotal)
+    
+    team1, team2 = team2, team1
+    target = totalScore + 1
+    
+    prepInnings2(team1, team2, target)
     
 
 #Checking for teams data
